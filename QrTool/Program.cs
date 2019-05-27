@@ -20,18 +20,22 @@ namespace QrTool
         {
             if (args.Length == 1)
             {
-                BarcodeReader reader = new BarcodeReader();
-                reader.Options.CharacterSet = "UTF-8";
                 try
                 {
                     var filename = args[0];
                     var bitmap = new Bitmap(filename);
-                    var result = reader.Decode(bitmap);
+
+                    BarcodeReader reader = new BarcodeReader();
+                    reader.AutoRotate = true;
+                    reader.TryInverted = true;
+                    reader.Options.TryHarder = true;
+                    reader.Options.CharacterSet = "UTF-8";
+                    Result result = reader.Decode(bitmap);
                     Console.WriteLine(result.Text);
                 }
                 catch
                 {
-                    Console.WriteLine("invalid image file.");
+                    Console.WriteLine("invalid qr image file.");
                 }
             }
             else if (args.Length == 3)
