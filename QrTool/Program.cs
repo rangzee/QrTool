@@ -40,23 +40,29 @@ namespace QrTool
             }
             else if (args.Length == 3)
             {
-                var width = args[0]; // 二维码宽度
-                var height = args[1]; // 二维码高度
-                var content = args[2]; // 编码内容
                 try
                 {
-                    BarcodeWriter barCodeWriter = new BarcodeWriter();
-                    barCodeWriter.Format = BarcodeFormat.QR_CODE;
-                    barCodeWriter.Options.Hints.Add(EncodeHintType.CHARACTER_SET, "UTF-8");
-                    barCodeWriter.Options.Hints.Add(EncodeHintType.ERROR_CORRECTION, ZXing.QrCode.Internal.ErrorCorrectionLevel.H);
-                    barCodeWriter.Options.Height = int.TryParse(height, out int h) ? h : 512;
-                    barCodeWriter.Options.Width = int.TryParse(width, out int w) ? w : 512;
-                    barCodeWriter.Options.Margin = 0;
-
-                    BitMatrix bm = barCodeWriter.Encode(content);
-                    var bitmap = barCodeWriter.Write(bm);
-
-                    bitmap.Save($"QR_{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.png", System.Drawing.Imaging.ImageFormat.Png);
+                    Generate(
+                        int.TryParse(args[0], out int w) ? w : 512, // 二维码宽度
+                        int.TryParse(args[1], out int h) ? h : 512, // 二维码高度
+                        args[2] // 编码内容
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            else if (args.Length == 4)
+            {
+                try
+                {
+                    Generate(
+                        int.TryParse(args[0], out int w) ? w : 512, // 二维码宽度
+                        int.TryParse(args[1], out int h) ? h : 512, // 二维码高度
+                        args[2], // 编码内容
+                        args[3]  // 二维码文件名
+                    );
                 }
                 catch (Exception ex)
                 {
@@ -66,9 +72,30 @@ namespace QrTool
             else
             {
                 var execute = System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().CodeBase).Replace(".exe", "");
-                Console.WriteLine($"Usage:\n\t{execute} width height \"text to code\"");
+                Console.WriteLine($"Usage:\n\t{execute} width height \"text to code\" [filename.png]");
                 Console.WriteLine($"\t{execute} \"file to decode\"");
             }
+        }
+
+        static void Generate(int width, int height, string content, string filename = null)
+        {
+            BarcodeWriter barCodeWriter = new BarcodeWriter();
+            barCodeWriter.Format = BarcodeFormat.QR_CODE;
+            barCodeWriter.Options.Hints.Add(EncodeHintType.CHARACTER_SET, "UTF-8");
+            barCodeWriter.Options.Hints.Add(EncodeHintType.ERROR_CORRECTION, ZXing.QrCode.Internal.ErrorCorrectionLevel.H);
+            barCodeWriter.Options.Height = height;
+            barCodeWriter.Options.Width = width;
+            barCodeWriter.Options.Margin = 0;
+
+            BitMatrix bm = barCodeWriter.Encode(content);
+            var bitmap = barCodeWriter.Write(bm);
+
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                filename = $"QR_{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.png";
+            }
+
+            bitmap.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
         }
 
     }
